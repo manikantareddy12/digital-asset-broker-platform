@@ -1,0 +1,358 @@
+{
+    "abi": [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [],
+            "name": "InvalidAddress",
+            "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "InvalidAmount",
+            "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "InvalidTerm",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "from",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "to",
+                    "type": "uint8"
+                }
+            ],
+            "name": "InvalidTransition",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "LoanAlreadyExists",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "LoanNotFound",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "activatedAt",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LoanActivated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "borrower",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "lender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "principalAmount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "externalId",
+                    "type": "string"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LoanRegistered",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint8",
+                    "name": "oldStatus",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint8",
+                    "name": "newStatus",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "changedBy",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LoanStatusChanged",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "REGISTRAR_ROLE",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "getLoan",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "bytes32",
+                            "name": "loanId",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "borrower",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "lender",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "principalAmount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateBps",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "termDays",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "createdAt",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "activatedAt",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "status",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "externalId",
+                            "type": "string"
+                        }
+                    ],
+                    "internalType": "struct LoanRegistry.Loan",
+                    "name": "",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getLoanCount",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "from",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "to",
+                    "type": "uint8"
+                }
+            ],
+            "name": "isValidTransition",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "borrower",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "lender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "principalAmount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "interestRateBps",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "termDays",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "externalId",
+                    "type": "string"
+                }
+            ],
+            "name": "registerLoan",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "loanId",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "newStatus",
+                    "type": "uint8"
+                }
+            ],
+            "name": "updateStatus",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "pause",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "unpause",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
+}

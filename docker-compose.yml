@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # Infrastructure Services
+  # ===========================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: loan-postgres
+    environment:
+      POSTGRES_DB: loandb
+      POSTGRES_USER: loanuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdevpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U loanuser -d loandb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loan-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: loan-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - loan-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: loan-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - loan-network
+
+  # ===========================================
+  # Blockchain Node (Local Development)
+  # ===========================================
+
+  hardhat-node:
+    build:
+      context: ./contracts
+      dockerfile: Dockerfile
+    container_name: loan-hardhat
+    ports:
+      - "8545:8545"
+    networks:
+      - loan-network
+    command: npx hardhat node --hostname 0.0.0.0
+
+  # ===========================================
+  # Application Services
+  # ===========================================
+
+  blockchain-gateway:
+    build:
+      context: ./blockchain-gateway
+      dockerfile: Dockerfile
+    container_name: loan-blockchain-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - ETHEREUM_RPC_URL=http://hardhat-node:8545
+      - PRIVATE_KEY=${BLOCKCHAIN_PRIVATE_KEY}
+      - LOAN_REGISTRY_ADDRESS=${LOAN_REGISTRY_ADDRESS}
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      hardhat-node:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    networks:
+      - loan-network
+
+  loan-service:
+    build:
+      context: ./loan-service
+      dockerfile: Dockerfile
+    container_name: loan-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loandb
+      - SPRING_DATASOURCE_USERNAME=loanuser
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-localdevpassword}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - BLOCKCHAIN_GATEWAY_URL=http://blockchain-gateway:3000
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-change-in-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      blockchain-gateway:
+        condition: service_started
+    networks:
+      - loan-network
+
+  admin-ui:
+    build:
+      context: ./admin-ui
+      dockerfile: Dockerfile
+    container_name: loan-admin-ui
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:8081
+    depends_on:
+      - loan-service
+    networks:
+      - loan-network
+
+# ===========================================
+# Networks and Volumes
+# ===========================================
+
+networks:
+  loan-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
