@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Heart, Server, Database, Cloud, CheckCircle, XCircle, RefreshCw, Zap } from 'lucide-react';
-import { healthApi, apiClient } from '../api/client';
+import { healthApi } from '../api/client';
 import { useState, useEffect } from 'react';
 
 // Gateway health check URL
