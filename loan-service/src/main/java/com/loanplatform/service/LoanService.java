@@ -232,6 +232,7 @@ public class LoanService {
                 .id(loan.getId())
                 .externalId(loan.getExternalId())
                 .blockchainLoanId(loan.getBlockchainLoanId())
+                .blockchainTxHash(loan.getBlockchainTxHash())
                 .borrowerId(loan.getBorrower().getExternalId())
                 .borrowerName(loan.getBorrower().getLegalName())
                 .lenderId(loan.getLender().getExternalId())

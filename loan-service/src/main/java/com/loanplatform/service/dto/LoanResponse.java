@@ -17,6 +17,7 @@ public class LoanResponse {
     private Long id;
     private String externalId;
     private String blockchainLoanId;
+    private String blockchainTxHash;
 
     private String borrowerId;
     private String borrowerName;

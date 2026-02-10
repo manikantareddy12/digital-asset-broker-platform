@@ -176,6 +176,9 @@ export class TransactionService {
 
     /**
      * Parse events from transaction receipt
+     * 
+     * Note: ethers.js v6 Result objects require toObject() for named arg extraction.
+     * BigInt values must be converted to strings for JSON serialization.
      */
     static parseEvents(receipt, contract) {
         const events = [];
@@ -188,11 +191,26 @@ export class TransactionService {
                 });
 
                 if (parsed) {
+                    // Use toObject() for ethers v6 Result, with fallback
+                    let args = {};
+                    if (typeof parsed.args.toObject === 'function') {
+                        args = parsed.args.toObject();
+                    } else {
+                        args = Object.fromEntries(
+                            Object.entries(parsed.args).filter(([key]) => isNaN(key))
+                        );
+                    }
+
+                    // Convert BigInt values to strings for JSON serialization
+                    for (const [key, value] of Object.entries(args)) {
+                        if (typeof value === 'bigint') {
+                            args[key] = value.toString();
+                        }
+                    }
+
                     events.push({
                         name: parsed.name,
-                        args: Object.fromEntries(
-                            Object.entries(parsed.args).filter(([key]) => isNaN(key))
-                        )
+                        args
                     });
                 }
             } catch {
