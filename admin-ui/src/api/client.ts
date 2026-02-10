@@ -91,6 +91,17 @@ export interface Page<T> {
     size: number;
 }
 
+// Create Loan Request (must match backend CreateLoanRequest DTO)
+export interface CreateLoanRequest {
+    borrowerId: string;
+    lenderId: string;
+    principalAmount: number;
+    interestRate: number;
+    termDays: number;
+    purpose?: string;
+    currency?: string;
+}
+
 // API Functions
 export const loansApi = {
     list: (page = 0, size = 10) =>
@@ -101,6 +112,18 @@ export const loansApi = {
 
     listByStatus: (status: string, page = 0, size = 10) =>
         apiClient.get<Page<Loan>>(`/loans/status/${status}?page=${page}&size=${size}`),
+
+    create: (data: CreateLoanRequest) =>
+        apiClient.post<Loan>('/loans', data),
+
+    approve: (externalId: string) =>
+        apiClient.post<Loan>(`/loans/${externalId}/approve`),
+
+    activate: (externalId: string) =>
+        apiClient.post<Loan>(`/loans/${externalId}/activate`),
+
+    cancel: (externalId: string) =>
+        apiClient.post<Loan>(`/loans/${externalId}/cancel`),
 };
 
 export const repaymentsApi = {

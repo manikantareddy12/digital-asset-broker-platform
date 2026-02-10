@@ -39,21 +39,36 @@ public class BlockchainGatewayClient {
         HttpHeaders headers = createHeaders();
         HttpEntity<LoanRegistrationRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<LoanRegistrationResponse> response = restTemplate.exchange(
+        // Read raw JSON to debug
+        ResponseEntity<String> rawResponse = restTemplate.exchange(
                 gatewayUrl + "/chain/loan/register",
                 HttpMethod.POST,
                 entity,
-                LoanRegistrationResponse.class);
+                String.class);
 
-        if (response.getBody() == null || !response.getBody().isSuccess()) {
-            throw new BlockchainOperationException("Failed to register loan on blockchain");
+        System.out.println("!!!!!!!!!!! RAW GATEWAY RESPONSE: " + rawResponse.getBody());
+
+        if (rawResponse.getBody() == null) {
+            throw new BlockchainOperationException("Gateway returned null body");
         }
 
-        log.info("Loan registered on blockchain: loanId={}, txHash={}",
-                response.getBody().getData().getLoanId(),
-                response.getBody().getData().getTransactionHash());
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            LoanRegistrationResponse response = mapper.readValue(rawResponse.getBody(), LoanRegistrationResponse.class);
 
-        return response.getBody();
+            if (!response.isSuccess()) {
+                throw new BlockchainOperationException("Failed to register loan on blockchain");
+            }
+
+            log.info("Loan registered on blockchain: loanId={}, txHash={}",
+                    response.getData().getLoanId(),
+                    response.getData().getTransactionHash());
+
+            return response;
+        } catch (Exception e) {
+            log.error("Failed to parse gateway response", e);
+            throw new BlockchainOperationException("Failed to parse gateway response: " + e.getMessage());
+        }
     }
 
     /**
@@ -167,10 +182,20 @@ public class BlockchainGatewayClient {
     }
 
     @lombok.Data
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     public static class LoanRegistrationData {
+        @com.fasterxml.jackson.annotation.JsonProperty("loanId")
         private String loanId;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("transactionHash")
         private String transactionHash;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("blockNumber")
         private long blockNumber;
+
+        @com.fasterxml.jackson.annotation.JsonProperty("gasUsed")
         private String gasUsed;
     }
 

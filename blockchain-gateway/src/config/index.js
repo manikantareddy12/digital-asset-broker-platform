@@ -10,8 +10,12 @@ export const config = {
     nodeEnv: process.env.NODE_ENV || 'development',
     port: parseInt(process.env.PORT || '3000', 10),
 
-    // CORS
-    corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:8080'],
+    // CORS - Allow admin UI and loan service
+    corsOrigins: process.env.CORS_ORIGINS?.split(',') || [
+        'http://localhost:5173',  // Vite dev server (admin-ui)
+        'http://localhost:8081',  // Spring Boot (loan-service)
+        'http://localhost:8080'   // Legacy
+    ],
 
     // Ethereum
     ethereumRpcUrl: process.env.ETHEREUM_RPC_URL || 'http://localhost:8545',

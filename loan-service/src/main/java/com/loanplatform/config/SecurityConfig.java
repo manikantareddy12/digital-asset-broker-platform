@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+// @EnableMethodSecurity // TODO: Re-enable in production with proper JWT auth
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -33,16 +33,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers(
-                                "/actuator/health/**",
-                                "/actuator/info",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html")
-                        .permitAll()
-                        // All other endpoints require authentication
-                        .anyRequest().authenticated());
+                        // For development: allow all requests
+                        // TODO: In production, implement proper JWT authentication
+                        .anyRequest().permitAll());
 
         // TODO: Add JWT filter
         // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

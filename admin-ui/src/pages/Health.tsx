@@ -118,34 +118,34 @@ export function Health() {
             {/* Service Cards */}
             <div className="stats-grid">
                 <ServiceCard
-                    name="Loan Service (Spring Boot)"
+                    name="Loan Service"
+                    description="Spring Boot Backend"
                     icon={<Server size={24} />}
                     status={isLoading ? 'checking' : isHealthy ? 'up' : 'down'}
-                    endpoint="http://localhost:8081"
                 />
                 <ServiceCard
-                    name="Blockchain Gateway (Node.js)"
+                    name="Blockchain Gateway"
+                    description="Node.js Service"
                     icon={<Cloud size={24} />}
                     status={serviceStatus.gateway}
-                    endpoint={GATEWAY_URL}
                 />
                 <ServiceCard
-                    name="PostgreSQL Database"
+                    name="PostgreSQL"
+                    description="Database"
                     icon={<Database size={24} />}
                     status={isLoading ? 'checking' : serviceStatus.postgres}
-                    endpoint="localhost:5432"
                 />
                 <ServiceCard
-                    name="Kafka Message Broker"
+                    name="Kafka"
+                    description="Message Broker"
                     icon={<Cloud size={24} />}
                     status={isLoading ? 'checking' : serviceStatus.kafka}
-                    endpoint="localhost:9092"
                 />
                 <ServiceCard
-                    name="Hardhat Blockchain"
+                    name="Hardhat"
+                    description="Local Blockchain"
                     icon={<Zap size={24} />}
                     status={serviceStatus.hardhat}
-                    endpoint="http://localhost:8545"
                 />
             </div>
 
@@ -167,16 +167,67 @@ export function Health() {
                         </p>
                     </div>
                 ) : (
-                    <pre style={{
-                        background: 'var(--color-bg-tertiary)',
-                        padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
-                        overflow: 'auto',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.75rem'
-                    }}>
-                        {JSON.stringify(health, null, 2)}
-                    </pre>
+                    <div style={{ padding: '0.5rem 0' }}>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Overall</strong></td>
+                                    <td>
+                                        <span className={`badge ${health?.status === 'UP' ? 'matched' : 'mismatched'}`}>
+                                            {health?.status || 'Unknown'}
+                                        </span>
+                                    </td>
+                                    <td style={{ color: 'var(--color-text-muted)' }}>Application health status</td>
+                                </tr>
+                                {health?.components?.db && (
+                                    <tr>
+                                        <td><strong>Database</strong></td>
+                                        <td>
+                                            <span className={`badge ${health.components.db.status === 'UP' ? 'matched' : 'mismatched'}`}>
+                                                {health.components.db.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ color: 'var(--color-text-muted)' }}>
+                                            {health.components.db.details?.database || 'PostgreSQL'}
+                                        </td>
+                                    </tr>
+                                )}
+                                {health?.components?.diskSpace && (
+                                    <tr>
+                                        <td><strong>Disk Space</strong></td>
+                                        <td>
+                                            <span className={`badge ${health.components.diskSpace.status === 'UP' ? 'matched' : 'mismatched'}`}>
+                                                {health.components.diskSpace.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ color: 'var(--color-text-muted)' }}>
+                                            {health.components.diskSpace.details?.free
+                                                ? `${(health.components.diskSpace.details.free / 1073741824).toFixed(1)} GB free`
+                                                : 'Available'}
+                                        </td>
+                                    </tr>
+                                )}
+                                {health?.components?.ping && (
+                                    <tr>
+                                        <td><strong>Ping</strong></td>
+                                        <td>
+                                            <span className={`badge ${health.components.ping.status === 'UP' ? 'matched' : 'mismatched'}`}>
+                                                {health.components.ping.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ color: 'var(--color-text-muted)' }}>Application responding</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>
@@ -185,14 +236,14 @@ export function Health() {
 
 function ServiceCard({
     name,
+    description,
     icon,
-    status,
-    endpoint
+    status
 }: {
     name: string;
+    description: string;
     icon: React.ReactNode;
     status: 'up' | 'down' | 'checking';
-    endpoint: string;
 }) {
     const statusColors = {
         up: 'success',
@@ -213,7 +264,10 @@ function ServiceCard({
             </div>
             <div className="stat-content" style={{ flex: 1 }}>
                 <h3>{name}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                    {description}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                     {status === 'up' ? (
                         <CheckCircle size={14} style={{ color: 'var(--color-success)' }} />
                     ) : status === 'down' ? (
@@ -223,9 +277,6 @@ function ServiceCard({
                         {statusLabels[status]}
                     </span>
                 </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                    {endpoint}
-                </p>
             </div>
         </div>
     );

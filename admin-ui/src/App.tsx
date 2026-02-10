@@ -1,10 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Loans } from './pages/Loans';
 import { Events } from './pages/Events';
 import { Health } from './pages/Health';
+import { Login } from './pages/Login';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -16,21 +18,47 @@ const queryClient = new QueryClient({
   },
 });
 
+function ProtectedRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/loans" element={<Loans />} />
+        <Route path="/repayments" element={<Repayments />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/health" element={<Health />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/*" element={<ProtectedRoutes />} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/loans" element={<Loans />} />
-            <Route path="/repayments" element={<Repayments />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/health" element={<Health />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
