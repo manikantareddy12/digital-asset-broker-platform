@@ -46,8 +46,6 @@ public class BlockchainGatewayClient {
                 entity,
                 String.class);
 
-        System.out.println("!!!!!!!!!!! RAW GATEWAY RESPONSE: " + rawResponse.getBody());
-
         if (rawResponse.getBody() == null) {
             throw new BlockchainOperationException("Gateway returned null body");
         }

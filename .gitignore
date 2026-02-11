@@ -71,7 +71,4 @@ mvnw.cmd
 # Docker
 .docker/
 
-# Documentation (keep only main README)
-*.md
-!README.md
-docs/
+docs

@@ -119,25 +119,19 @@ public class LoanService {
 
         LoanRegistrationResponse response = blockchainClient.registerLoan(blockchainRequest);
 
-        System.out.println("!!!!!!!!!!! BLOCKCHAIN RESPONSE SUCC: " + response.isSuccess());
-        System.out.println("!!!!!!!!!!! BLOCKCHAIN RESPONSE DATA: " + response.getData());
-
         // Store blockchain reference
         if (response.getData() != null) {
-            System.out.println("!!!!!!!!!!! SETTING LOAN ID: " + response.getData().getLoanId());
             loan.setBlockchainLoanId(response.getData().getLoanId());
             loan.setBlockchainTxHash(response.getData().getTransactionHash());
         } else {
-            System.out.println("!!!!!!!!!!! DATA IS NULL");
+            // No data returned from blockchain gateway
         }
 
         loan = loanRepository.save(loan);
-        System.out.println("!!!!!!!!!!! SAVED LOAN: " + loan.getExternalId() + " -> " + loan.getBlockchainLoanId());
 
         // Publish event
         // publishLoanEvent("LOAN_APPROVED", loan);
 
-        System.out.println("!!!!!!!!!!! RETURNING LOAN RESPONSE");
         return mapToResponse(loan);
     }
 
