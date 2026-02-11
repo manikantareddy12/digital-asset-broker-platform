@@ -589,21 +589,6 @@ The entire blockchain stack can be built and deployed **100% free**:
 | **Role-based UI** | Admin, Analyst, Viewer — different capabilities per role |
 
 ---
-
-## 📖 Documentation
-
-Detailed documentation is available in the [`docs/`](docs/) folder:
-
-| Document | Description |
-|----------|-------------|
-| [Project Documentation](docs/project_documentation.md) | Complete deep-dive: business flow, tech stack, blockchain explained, production guide |
-| [Architecture](docs/architecture.md) | Detailed system architecture |
-| [Blockchain Flow](docs/blockchain-flow-explained.md) | Transaction lifecycle walkthrough |
-| [Security](docs/security.md) | Security model and threat analysis |
-| Phase 1–6 docs | Step-by-step build documentation |
-
----
-
 ## 📝 License
 
 MIT License — See [LICENSE](LICENSE) for details.
